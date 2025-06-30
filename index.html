@@ -1,73 +1,117 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
   <meta charset="UTF-8">
   <title>99 Quiz</title>
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      font-family: sans-serif;
+      background-color: #f2f2f2;
+      text-align: center;
+    }
+    #question {
+      font-size: 2em;
+      margin: 20px 0;
+    }
+    .choice-btn {
+      font-size: 1.5em;
+      padding: 10px 30px;
+      margin: 10px;
+      cursor: pointer;
+    }
+    #feedback {
+      margin-top: 20px;
+      font-size: 1.2em;
+    }
+    #next-btn {
+      display: none;
+      margin-top: 30px;
+      font-size: 1.2em;
+      padding: 10px 20px;
+      cursor: pointer;
+    }
+  </style>
 </head>
 <body>
-  <h1 id="question">문제</h1>
+
+  <div id="question">문제</div>
   <div id="choices"></div>
-  <p id="feedback"></p>
+  <div id="feedback"></div>
+  <button id="next-btn">다음 문제</button>
 
   <script>
     const quizData = [
       {
         question: "4 × 7",
         correct: "28",
+        explanation: "4 곱하기 7은 28입니다.",
         choices: ["21", "28", "32", "30"]
       },
       {
         question: "6 × 9",
         correct: "54",
+        explanation: "6 곱하기 9는 54입니다.",
         choices: ["54", "56", "49", "60"]
       },
       {
         question: "3 × 5",
         correct: "15",
+        explanation: "3 곱하기 5는 15입니다.",
         choices: ["15", "10", "12", "18"]
       }
     ];
 
-    let current = 0;
+    let currentQuiz = null;
+
+    const questionEl = document.getElementById("question");
+    const choicesEl = document.getElementById("choices");
+    const feedbackEl = document.getElementById("feedback");
+    const nextBtn = document.getElementById("next-btn");
 
     function shuffle(array) {
       return array.sort(() => Math.random() - 0.5);
     }
 
-    function showQuestion() {
-      const q = quizData[current];
-      document.getElementById("question").textContent = q.question;
+    function showRandomQuestion() {
+      const randomIndex = Math.floor(Math.random() * quizData.length);
+      currentQuiz = quizData[randomIndex];
       
-      const choices = shuffle([...q.choices]);
-      const choicesDiv = document.getElementById("choices");
-      choicesDiv.innerHTML = "";
+      questionEl.textContent = currentQuiz.question;
+      feedbackEl.textContent = "";
+      nextBtn.style.display = "none";
 
-      choices.forEach(choice => {
+      const shuffledChoices = shuffle([...currentQuiz.choices]);
+      choicesEl.innerHTML = "";
+
+      shuffledChoices.forEach(choice => {
         const btn = document.createElement("button");
         btn.textContent = choice;
+        btn.className = "choice-btn";
         btn.onclick = () => {
-          const feedback = document.getElementById("feedback");
-          if (choice === q.correct) {
-            feedback.textContent = "정답입니다!";
+          if (feedbackEl.textContent !== "") return;
+
+          if (choice === currentQuiz.correct) {
+            feedbackEl.textContent = `✅ 정답입니다! ${currentQuiz.explanation}`;
           } else {
-            feedback.textContent = `오답입니다. 정답은 ${q.correct}`;
+            feedbackEl.textContent = `❌ 오답입니다. ${currentQuiz.explanation}`;
           }
-          setTimeout(() => {
-            current++;
-            if (current < quizData.length) {
-              feedback.textContent = "";
-              showQuestion();
-            } else {
-              document.getElementById("question").textContent = "퀴즈 종료!";
-              choicesDiv.innerHTML = "";
-            }
-          }, 1000);
+
+          nextBtn.style.display = "inline-block";
         };
-        choicesDiv.appendChild(btn);
+        choicesEl.appendChild(btn);
       });
     }
 
-    showQuestion();
+    nextBtn.onclick = showRandomQuestion;
+
+    // 첫 문제 표시
+    showRandomQuestion();
   </script>
+
 </body>
 </html>
